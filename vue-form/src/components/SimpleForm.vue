@@ -148,6 +148,7 @@ export default {
 }
 
 .select-input {
+    cursor: pointer;
     position: relative;
     background-color: #F6F8FA;
     color: #76879e;
@@ -374,7 +375,7 @@ export default {
         .checkmark {
             color: #31425a;
             position: absolute;
-            top: 0;
+            top: calc(50% - 25px/2);
             left: 0;
             height: 25px;
             width: 25px;
@@ -420,7 +421,45 @@ export default {
     }
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 638px) {
+    .simple-form {
+        padding: 25px 20px 25px;
+    }
 
+    .text-inputs {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        row-gap: 20px;
+
+        .text-input,
+        .select-input {
+            width: 295px;
+            margin: 0px;
+        }
+
+        :nth-child(even) {
+            margin-right: 0px;
+        }
+    }
+
+    .sign-up-wrapper {
+
+        :first-child {
+            order: 2;
+        }
+
+        :nth-child(2) {
+            order: 1;
+            margin-bottom: 30px;
+        }
+
+        & > button {
+            margin-right: 0px;
+        }
+
+        flex-direction: column;
+        align-items: center;
+    }
 }
 </style>
