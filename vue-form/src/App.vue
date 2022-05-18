@@ -37,8 +37,6 @@ body {
 }
 
 #app {
-  display: flex;
-  justify-content: center;
   height: 100vh;
   position: relative;
 }

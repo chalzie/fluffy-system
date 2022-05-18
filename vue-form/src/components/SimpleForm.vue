@@ -52,16 +52,21 @@
                 <span class="checkmark"></span>
             </label>
         </div>
+        <Modal :showModal="showModal" />
     </div>
 </template>
 
 <script>
 import axios from 'axios';
+import Modal from './Modal';
 import { email, required, minLength, sameAs } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
 
 export default {
     name: "SimpleForm",
+    components: {
+        Modal,
+    },
     setup: () => ({ v$: useVuelidate() }),
     data() {
         return {
@@ -74,6 +79,7 @@ export default {
             password: '',
             confirmPassword: '',
             checkPrivate: false,
+            showModal: false
         }
     },
     validations() {
@@ -101,6 +107,7 @@ export default {
             }
             else {
                 console.log('valid form');
+                this.showModal = true;
             }
         }
     }
@@ -108,7 +115,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
+<style lang="scss">
 .simple-form {
     position: absolute;
     margin: 0;
