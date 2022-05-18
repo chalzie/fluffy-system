@@ -16,14 +16,16 @@
             </div>
             <div class="wrapper">
                 <select name="language" v-model="language" id="language" class="select-input" placeholder="Language">
-                    <option value="sk">Slovak</option>
-                    <option value="en">English</option>
+                    <option value="" disabled selected>Language</option>
+                    <option value="sk"><img src="../assets/sk.svg"> Slovak</option>
+                    <option value="en"><img src="../assets/en.svg"> English</option>
                 </select>
                 <span class="error" v-if="v$.language.$errors.length">{{v$.language.$errors[0].$message}}</span>
             </div>
             <div class="wrapper">
                 <select name="country" v-model="selectedCountry" id="country" class="select-input" placeholder="Country">
-                    <option v-for="(country, idx) in countries" :value="country" :key="idx">{{country.name}}</option>
+                    <option value="" disabled selected>Country</option>
+                    <option v-for="(country, idx) in countries" :value="country.name" :key="idx">{{country.name}}</option>
                 </select>
                 <span class="error" v-if="v$.selectedCountry.$errors.length">{{v$.selectedCountry.$errors[0].$message}}</span>
             </div>
@@ -41,8 +43,8 @@
             <label class="switcher">
                 <input type="checkbox" v-model="checkPrivate">
                 <span class="slider round"></span>
-                <span v-if="checkPrivate" class="slider-yes">YES</span>
-                <span v-if="!checkPrivate" class="slider-no">NO</span>
+                <span v-if="checkPrivate" class="slider-text yes">YES</span>
+                <span v-if="!checkPrivate" class="slider-text no">NO</span>
             </label>
         </div>
         <div class="sign-up-wrapper">
@@ -128,10 +130,11 @@ export default {
     justify-content: center;
     padding: 60px;
     background-color: #fff;
-    border-radius: 20px;
+    border-radius: 25px;
 
     & > h1 {
         text-align: center;
+        line-height: 78.12px;
     }
 }
 
@@ -144,31 +147,54 @@ export default {
     }
 }
 
+.select-input {
+    position: relative;
+    background-color: #F6F8FA;
+    color: #76879e;
+    height: 44px;
+    border-radius: 14px;
+    padding: 10px 10px 10px;
+    border: none;
+
+    display: grid;
+    grid-template-areas: "select";
+
+    appearance: none;
+    width: 100%;
+    // TODO: selectboxes with popper.js
+
+    &::-ms-expand {
+        display: none;
+    }
+}
+
+.select-input::after {
+  content: "";
+  width: 0.8em;
+  height: 0.5em;
+  background-color: grey;
+  clip-path: polygon(100% 0%, 0 0%, 50% 100%);
+}
+
 .text-inputs {
     display: grid;
     justify-content: center;
     grid-template-columns: 0.5fr 0.5fr;
     grid-template-rows: 70px 70px 70px 70px;
 
-    .select-input {
-        margin: 10px 0px;
-        height: 40px;
-        padding: 10px;
-        border-radius: 10px;
-        background-color: #F6F8FA;
-        position: relative;
-
-        // TODO: selectboxes with popper.js
+    :nth-child(even) {
+        margin-right: 20px;
     }
 
     .text-input {
         background-color: #F6F8FA;
-        border-radius: 10px;
-        height: 30px;
+        border-radius: 14px;
+        height: 44px;
         border: none;
         padding: 10px;
-        padding-left: 13px;
+        padding-left: 18px;
         border: 1px solid #f2f5f8;
+        transition: all 0.4s;
 
         &:valid {
             color: #1b2c45;
@@ -180,10 +206,6 @@ export default {
 
         &::placeholder {
             color: #76879e;
-        }
-
-        &:nth-child(even) {
-            margin-right: 20px;
         }
     }
 
@@ -212,6 +234,7 @@ export default {
     }
 
     .error {
+        transition: visibility 0.4s;
         color: red;
         font-size: 12px;
     }
@@ -227,8 +250,9 @@ export default {
     .switcher {
         position: relative;
         display: inline-block;
-        width: 80px;
-        height: 34px;
+        cursor: pointer;
+        width: 60px;
+        height: 30px;
 
         & > input {
             opacity: 0;
@@ -238,46 +262,48 @@ export default {
 
         & > span {
             color: #a6b1c1;
+            font-size: 11px;
         }
 
         .slider {
             position: absolute;
-            cursor: pointer;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background-color: #f2f5f8;
-            -webkit-transition: .4s;
-            transition: .4s;
+            -webkit-transition: all .4s;
+            transition: all .4s;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
+            height: 24px;
+            width: 19px;
             left: 4px;
-            bottom: 4px;
+            bottom: 3px;
             background-color: white;
-            -webkit-transition: .4s;
-            transition: .4s;
+            -webkit-transition: all .4s;
+            transition: all .4s;
         }
 
-        .slider-yes {
-            color: #fff;
+        .slider-text {
             position: absolute;
-            font-size: 16px;
-            left: 8px;
-            top: 8px;
-        }
+            top: 1px;
+            height: 28px;
+            line-height: 27.81px;
+            transition: visibility .4s;
 
-        .slider-no {
-            color: #76879e;
-            position: absolute;
-            font-size: 16px;
-            right: 8px;
-            top: 8px;
+            &.yes {
+                color: #fff;
+                left: 11px;
+            }
+
+            &.no {
+                color: #76879e;
+                right: 11px;
+            }
         }
 
         input:checked + .slider {
@@ -289,17 +315,17 @@ export default {
         }
 
         input:checked + .slider:before {
-            -webkit-transform: translateX(46px);
-            -ms-transform: translateX(46px);
-            transform: translateX(46px);
+            -webkit-transform: translateX(34px);
+            -ms-transform: translateX(34px);
+            transform: translateX(34px);
         }
 
         .slider.round {
-            border-radius: 34px
+            border-radius: 10px;
         }
 
         .slider.round:before {
-            border-radius: 50%;
+            border-radius: 7px;
         }
     }
 }
@@ -335,6 +361,7 @@ export default {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+        line-height: 170.3%;
 
         input {
             position: absolute;
@@ -391,5 +418,9 @@ export default {
         -ms-transform: rotate(45deg);
         transform: rotate(45deg);
     }
+}
+
+@media screen and (max-width: 700px) {
+
 }
 </style>

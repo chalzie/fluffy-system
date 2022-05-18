@@ -32,12 +32,18 @@ export default {
     scroll-behavior: smooth;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   background: linear-gradient(to right, #FFF, #E1EbF7);
 }
 
 #app {
-  height: 100vh;
+  height: 887px;
   position: relative;
 }
 </style>
