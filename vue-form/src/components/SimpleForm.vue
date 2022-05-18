@@ -2,18 +2,39 @@
     <div class="simple-form">
         <h1>Registration Form</h1>
         <div class="text-inputs">
-            <input id="email" v-model="email" class="text-input" type="email" placeholder="Email" />
-            <input id="first-name" v-model="firstName" class="text-input" placeholder="First name" />
-            <input id="last-name" v-model="lastName" class="text-input" placeholder="Last name" />
-            <select name="language" v-model="language" id="language" class="select-input" placeholder="Language">
-                <option value="sk">Slovak</option>
-                <option value="en">English</option>
-            </select>
-            <select name="country" v-model="selectedCountry" id="country" class="select-input" placeholder="Country">
-                <option v-for="(country, idx) in countries" :value="country" :key="idx">{{country.name}}</option>
-            </select>
-            <input id="password" v-model="password" class="text-input" placeholder="Password" />
-            <input id="confirm_password" v-model="confirmPassword" class="text-input" placeholder="Confirm password" disabled/>
+            <div class="wrapper">
+                <input id="email" v-model="email" class="text-input" type="email" placeholder="Email" />
+                <span class="error" v-if="v$.email.$errors.length">{{v$.email.$errors[0].$message}}</span>
+            </div>
+            <div class="wrapper">
+                <input id="first-name" v-model="firstName" class="text-input" placeholder="First name" />
+                <span class="error" v-if="v$.firstName.$errors.length">{{v$.firstName.$errors[0].$message}}</span>
+            </div>
+            <div class="wrapper">
+                <input id="last-name" v-model="lastName" class="text-input" placeholder="Last name" />
+                <span class="error" v-if="v$.lastName.$errors.length">{{v$.lastName.$errors[0].$message}}</span>
+            </div>
+            <div class="wrapper">
+                <select name="language" v-model="language" id="language" class="select-input" placeholder="Language">
+                    <option value="sk">Slovak</option>
+                    <option value="en">English</option>
+                </select>
+                <span class="error" v-if="v$.language.$errors.length">{{v$.language.$errors[0].$message}}</span>
+            </div>
+            <div class="wrapper">
+                <select name="country" v-model="selectedCountry" id="country" class="select-input" placeholder="Country">
+                    <option v-for="(country, idx) in countries" :value="country" :key="idx">{{country.name}}</option>
+                </select>
+                <span class="error" v-if="v$.selectedCountry.$errors.length">{{v$.selectedCountry.$errors[0].$message}}</span>
+            </div>
+            <div class="wrapper">
+                <input id="password" v-model="password" class="text-input" placeholder="Password" type="password" />
+                <span class="error" v-if="v$.password.$errors.length">{{v$.password.$errors[0].$message}}</span>
+            </div>
+            <div class="wrapper">
+                <input id="confirm_password" v-model="confirmPassword" class="text-input" placeholder="Confirm password" type="password" />
+                <span class="error" v-if="v$.confirmPassword.$errors.length">{{v$.confirmPassword.$errors[0].$message}}</span>
+            </div>
         </div>
         <div class="private-wrapper">
             <label for="private"><b>Private Profile</b></label>
@@ -25,7 +46,7 @@
             </label>
         </div>
         <div class="sign-up-wrapper">
-            <button id="submit"><b>Sign up</b></button>
+            <button id="submit" @click.prevent="submit"><b>Sign up</b></button>
             <label class="checkbox-container">Creating an account means you're okay with our Privacy Policy
                 <input type="checkbox">
                 <span class="checkmark"></span>
@@ -36,9 +57,12 @@
 
 <script>
 import axios from 'axios';
+import { email, required, minLength, sameAs } from '@vuelidate/validators'
+import { useVuelidate } from '@vuelidate/core'
 
 export default {
     name: "SimpleForm",
+    setup: () => ({ v$: useVuelidate() }),
     data() {
         return {
             email: '',
@@ -49,7 +73,18 @@ export default {
             selectedCountry: '',
             password: '',
             confirmPassword: '',
-            checkPrivate: false
+            checkPrivate: false,
+        }
+    },
+    validations() {
+        return {
+            email: { required, email },
+            firstName: { required },
+            lastName: { required },
+            language: { required },
+            selectedCountry: { required },
+            password: { required, minLength: minLength(8) },
+            confirmPassword: { required, minLength: minLength(8), sameAsPassword: sameAs(this.password) }
         }
     },
     mounted() {
@@ -57,6 +92,18 @@ export default {
         .get('https://restcountries.com/v2/all?fields=name')
         .then(response => (this.countries = response.data));
     },
+    methods: {
+        async submit () {
+            const result = await this.v$.$validate()
+            if (!result) {
+                console.log('invalid form');
+                return
+            }
+            else {
+                console.log('valid form');
+            }
+        }
+    }
 };
 </script>
 
@@ -81,11 +128,20 @@ export default {
     }
 }
 
+.wrapper {
+    display: flex;
+    flex-direction: column;
+
+    &:first-of-type {
+        grid-column: 1 / 3;
+    }
+}
+
 .text-inputs {
     display: grid;
     justify-content: center;
     grid-template-columns: 0.5fr 0.5fr;
-    grid-template-rows: 60px 60px 60px 60px;
+    grid-template-rows: 70px 70px 70px 70px;
 
     .select-input {
         margin: 10px 0px;
@@ -95,13 +151,10 @@ export default {
         background-color: #F6F8FA;
         position: relative;
 
-        .select-input select {
-            background-color: #F6F8FA;
-        }
+        // TODO: selectboxes with popper.js
     }
 
     .text-input {
-        margin: 10px 0px;
         background-color: #F6F8FA;
         border-radius: 10px;
         height: 30px;
@@ -120,10 +173,6 @@ export default {
 
         &::placeholder {
             color: #76879e;
-        }
-
-        &:first-of-type {
-            grid-column: 1 / 3;
         }
 
         &:nth-child(even) {
@@ -153,6 +202,11 @@ export default {
             border-width: 0px;
             outline: 0;
         }
+    }
+
+    .error {
+        color: red;
+        font-size: 12px;
     }
 }
 
