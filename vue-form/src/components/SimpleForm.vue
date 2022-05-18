@@ -2,13 +2,18 @@
     <div class="simple-form">
         <h1>Registration Form</h1>
         <div class="text-inputs">
-            <input id="email" class="text-input" type="email" placeholder="Email" />
-            <input id="first-name" class="text-input" placeholder="First name" />
-            <input id="last-name" class="text-input" placeholder="Last name" />
-            <input id="language" class="text-input" placeholder="Language" />
-            <input id="country" class="text-input" placeholder="Country" />
-            <input id="password" class="text-input" placeholder="Password" />
-            <input id="confirm_password" class="text-input" placeholder="Confirm password" disabled/>
+            <input id="email" v-model="email" class="text-input" type="email" placeholder="Email" />
+            <input id="first-name" v-model="firstName" class="text-input" placeholder="First name" />
+            <input id="last-name" v-model="lastName" class="text-input" placeholder="Last name" />
+            <select name="language" v-model="language" id="language" class="select-input" placeholder="Language">
+                <option value="sk">Slovak</option>
+                <option value="en">English</option>
+            </select>
+            <select name="country" v-model="selectedCountry" id="country" class="select-input" placeholder="Country">
+                <option v-for="(country, idx) in countries" :value="country" :key="idx">{{country.name}}</option>
+            </select>
+            <input id="password" v-model="password" class="text-input" placeholder="Password" />
+            <input id="confirm_password" v-model="confirmPassword" class="text-input" placeholder="Confirm password" disabled/>
         </div>
         <div class="private-wrapper">
             <label for="private"><b>Private Profile</b></label>
@@ -30,12 +35,27 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
     name: "SimpleForm",
     data() {
         return {
+            email: '',
+            firstName: '',
+            lastName: '',
+            language: '',
+            countries: [],
+            selectedCountry: '',
+            password: '',
+            confirmPassword: '',
             checkPrivate: false
         }
+    },
+    mounted() {
+        axios
+        .get('https://restcountries.com/v2/all?fields=name')
+        .then(response => (this.countries = response.data));
     },
 };
 </script>
@@ -67,6 +87,19 @@ export default {
     grid-template-columns: 0.5fr 0.5fr;
     grid-template-rows: 60px 60px 60px 60px;
 
+    .select-input {
+        margin: 10px 0px;
+        height: 40px;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #F6F8FA;
+        position: relative;
+
+        .select-input select {
+            background-color: #F6F8FA;
+        }
+    }
+
     .text-input {
         margin: 10px 0px;
         background-color: #F6F8FA;
@@ -86,7 +119,6 @@ export default {
         }
 
         &::placeholder {
-            // color: #a6b1c1;
             color: #76879e;
         }
 
