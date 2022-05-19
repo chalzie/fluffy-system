@@ -7,11 +7,6 @@
 <script>
 import SimpleForm from "./components/SimpleForm.vue";
 
-import Vue from 'vue'
-import VueCompositionAPI from '@vue/composition-api'
-
-Vue.use(VueCompositionAPI)
-
 export default {
   name: "App",
   components: {
@@ -43,7 +38,7 @@ body {
 }
 
 #app {
-  height: 887px;
-  position: relative;
+  display: flex;
+  justify-content: center;
 }
 </style>

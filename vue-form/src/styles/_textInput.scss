@@ -1,0 +1,53 @@
+.text-input {
+    background-color: #F6F8FA;
+    border-radius: 14px;
+    width: 318px;
+    height: 64px;
+    border: none;
+    padding: 10px;
+    padding-left: 18px;
+    border: 1px solid #f2f5f8;
+    transition: all 0.4s;
+
+    &:valid {
+        color: #1b2c45;
+    }
+
+    &:invalid {
+        color: #f43c3c;
+    }
+
+    &::placeholder {
+        color: #76879e;
+    }
+}
+
+.text-input:hover {
+    border: 1px solid #d5dbe2;
+}
+
+.text-input:focus {
+    outline: 0;
+    border-width: 0 0 1px;
+    border-color: #004eef;
+
+    &::before {
+        content: "value";
+        color: red
+    }
+}
+
+.text-input:disabled {
+    outline: 0;
+
+    &:hover {
+        border-width: 0px;
+        outline: 0;
+    }
+}
+
+.error {
+    transition: visibility 0.4s;
+    color: red;
+    font-size: 12px;
+}

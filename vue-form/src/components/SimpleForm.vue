@@ -1,7 +1,7 @@
 <template>
     <div class="simple-form">
         <h1>Registration Form</h1>
-        <div class="text-inputs">
+        <div class="text-inputs-wrapper">
             <div class="wrapper">
                 <input id="email" v-model="email" class="text-input" type="email" placeholder="Email" />
                 <span class="error" v-if="v$.email.$errors.length">{{v$.email.$errors[0].$message}}</span>
@@ -15,18 +15,35 @@
                 <span class="error" v-if="v$.lastName.$errors.length">{{v$.lastName.$errors[0].$message}}</span>
             </div>
             <div class="wrapper">
-                <select name="language" v-model="language" id="language" class="select-input" placeholder="Language">
-                    <option value="" disabled selected>Language</option>
-                    <option value="sk"><img src="../assets/sk.svg"> Slovak</option>
-                    <option value="en"><img src="../assets/en.svg"> English</option>
-                </select>
+                <v-select
+                    v-model="language"
+                    class="dropdown-select language"
+                    placeholder="Language"
+                    :options="languages"
+                    :searchable=false
+                    :map-keydown="handlers"
+                    append-to-body
+                    :calculatePosition="withPopper"
+                >
+                    <template slot="selected-option" slot-scope="option">
+                        <img :src="option.image" width="20px">{{ option.title }}
+                    </template>
+                    <template slot="option" slot-scope="option">
+                        <img :src="option.image" width="20px">
+                        {{option.title}}
+                    </template>
+                </v-select>
                 <span class="error" v-if="v$.language.$errors.length">{{v$.language.$errors[0].$message}}</span>
             </div>
             <div class="wrapper">
-                <select name="country" v-model="selectedCountry" id="country" class="select-input" placeholder="Country">
-                    <option value="" disabled selected>Country</option>
-                    <option v-for="(country, idx) in countries" :value="country.name" :key="idx">{{country.name}}</option>
-                </select>
+                <v-select 
+                    v-model="selectedCountry"
+                    class="dropdown-select country"
+                    placeholder="Country"
+                    :searchable="false"
+                    :options="countries"
+                    :map-keydown="handlers"
+                />
                 <span class="error" v-if="v$.selectedCountry.$errors.length">{{v$.selectedCountry.$errors[0].$message}}</span>
             </div>
             <div class="wrapper">
@@ -63,6 +80,8 @@ import axios from 'axios';
 import Modal from './Modal';
 import { email, required, minLength, sameAs } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
+import { createPopper } from 'vue-popperjs';
+import 'vue-popperjs/dist/vue-popper.css';
 
 export default {
     name: "SimpleForm",
@@ -77,6 +96,17 @@ export default {
             lastName: '',
             language: '',
             countries: [],
+            placeholder: 'Country',
+            languages: [{
+                title: 'Slovak',
+                image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Flag_of_Slovakia.svg/1024px-Flag_of_Slovakia.svg.png',
+                label: 'sk'
+            },
+            {
+                title: 'English',
+                image: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/ae/Flag_of_the_United_Kingdom.svg/1920px-Flag_of_the_United_Kingdom.svg.png',
+                label: 'en'
+            }],
             selectedCountry: '',
             password: '',
             confirmPassword: '',
@@ -98,7 +128,7 @@ export default {
     mounted() {
         axios
         .get('https://restcountries.com/v2/all?fields=name')
-        .then(response => (this.countries = response.data));
+        .then(response => (this.countries = response.data.map(row => row.name)));
     },
     methods: {
         async submit () {
@@ -111,229 +141,116 @@ export default {
                 console.log('valid form');
                 this.showModal = true;
             }
-        }
+        },
+        withPopper(dropdownList, component, { width }) {
+            dropdownList.style.width = width + 36;
+            const popper = createPopper(component.$refs.toggle, dropdownList, {
+                placement: 'bottom',
+                // modifiers: [
+                //     {
+                //         name: 'offset',
+                //         options: {
+                //             offset: [0, -1],
+                //         },
+                //     },
+                //     {
+                //         name: 'toggleClass',
+                //         enabled: true,
+                //         phase: 'write',
+                //         fn({ state }) {
+                //             component.$el.classList.toggle(
+                //                 'drop-up',
+                //                 state.placement === 'top'
+                //             )
+                //         },
+                //     },
+                // ],
+            });
+            return () => popper.destroy()
+        },
+        handlers: (map, vm) => ({
+            ...map,
+            38: (e) => {
+                e.preventDefault();
+                vm.typeAheadUp();
+            },
+            40: (e) => {
+                e.preventDefault();
+                vm.typeAheadDown();
+            }
+        })
     }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss">
+@import  '../styles/_checkbox.scss';
+@import  '../styles/_dropdown.scss';
+@import  '../styles/_textInput.scss';
+@import  '../styles/_switcher.scss';
+
 .simple-form {
-    position: absolute;
-    margin: 0;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+    position: relative;
+    margin: 122px 283px 122px;
+    width: 874px;
+    height: 887px;
 
     display: grid;
     justify-content: center;
-    padding: 60px;
+
     background-color: #fff;
     border-radius: 25px;
 
     & > h1 {
+        margin-top: 94px;
         text-align: center;
+        font-size: 60px;
         line-height: 78.12px;
     }
 }
 
-.wrapper {
-    display: flex;
-    flex-direction: column;
-
-    &:first-of-type {
-        grid-column: 1 / 3;
-    }
-}
-
-.select-input {
-    cursor: pointer;
-    position: relative;
-    background-color: #F6F8FA;
-    color: #76879e;
-    height: 44px;
-    border-radius: 14px;
-    padding: 10px 10px 10px;
-    border: none;
-
-    display: grid;
-    grid-template-areas: "select";
-
-    appearance: none;
-    width: 100%;
-    // TODO: selectboxes with popper.js
-
-    &::-ms-expand {
-        display: none;
-    }
-}
-
-.select-input::after {
-  content: "";
-  width: 0.8em;
-  height: 0.5em;
-  background-color: grey;
-  clip-path: polygon(100% 0%, 0 0%, 50% 100%);
-}
-
-.text-inputs {
+.text-inputs-wrapper {
     display: grid;
     justify-content: center;
-    grid-template-columns: 0.5fr 0.5fr;
-    grid-template-rows: 70px 70px 70px 70px;
+    grid-template-columns: 318px 318px;
+    grid-template-rows: 64px 64px 64px 64px;
+    column-gap: 20px;
+    row-gap: 26px;
+    margin: 58px 106px 0px;
 
-    :nth-child(even) {
-        margin-right: 20px;
-    }
+    & > .wrapper:first-of-type {
+        grid-column: 1 / 3;
 
-    .text-input {
-        background-color: #F6F8FA;
-        border-radius: 14px;
-        height: 44px;
-        border: none;
-        padding: 10px;
-        padding-left: 18px;
-        border: 1px solid #f2f5f8;
-        transition: all 0.4s;
-
-        &:valid {
-            color: #1b2c45;
-        }
-
-        &:invalid {
-            color: #f43c3c;
-        }
-
-        &::placeholder {
-            color: #76879e;
+        & > .text-input {
+            width: 662px;
         }
     }
 
-    .text-input:hover {
-        border: 1px solid #d5dbe2;
+    .language {
+        z-index: 3;
     }
 
-    .text-input:focus {
-        outline: 0;
-        border-width: 0 0 1px;
-        border-color: #004eef;
-
-        &::before {
-            content: "value";
-            color: red
-        }
-    }
-
-    .text-input:disabled {
-        outline: 0;
-
-        &:hover {
-            border-width: 0px;
-            outline: 0;
-        }
-    }
-
-    .error {
-        transition: visibility 0.4s;
-        color: red;
-        font-size: 12px;
+    .country {
+        z-index: 2;
     }
 }
 
 .private-wrapper {
-    margin: 20px 0px;
+    margin: 20px 106px 0px;
     padding-bottom: 20px;
+
     display: flex;
+    align-items: center;
     justify-content: space-between;
+
     border-bottom: 1px solid #F2F4F6;
-
-    .switcher {
-        position: relative;
-        display: inline-block;
-        cursor: pointer;
-        width: 60px;
-        height: 30px;
-
-        & > input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        & > span {
-            color: #a6b1c1;
-            font-size: 11px;
-        }
-
-        .slider {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #f2f5f8;
-            -webkit-transition: all .4s;
-            transition: all .4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 24px;
-            width: 19px;
-            left: 4px;
-            bottom: 3px;
-            background-color: white;
-            -webkit-transition: all .4s;
-            transition: all .4s;
-        }
-
-        .slider-text {
-            position: absolute;
-            top: 1px;
-            height: 28px;
-            line-height: 27.81px;
-            transition: visibility .4s;
-
-            &.yes {
-                color: #fff;
-                left: 11px;
-            }
-
-            &.no {
-                color: #76879e;
-                right: 11px;
-            }
-        }
-
-        input:checked + .slider {
-            background-color: #004eef;
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px #004eef;
-        }
-
-        input:checked + .slider:before {
-            -webkit-transform: translateX(34px);
-            -ms-transform: translateX(34px);
-            transform: translateX(34px);
-        }
-
-        .slider.round {
-            border-radius: 10px;
-        }
-
-        .slider.round:before {
-            border-radius: 7px;
-        }
-    }
+    font-size: 14px;
 }
 
 .sign-up-wrapper {
     display: flex;
-    margin-top: 20px;
+    margin: 20px 106px 140px;
     justify-content: space-between;
     align-items: center;
 
@@ -351,99 +268,58 @@ export default {
             background: linear-gradient(to left, #8600ef, #034cef);
         }
     }
-
-    .checkbox-container {
-        display: block;
-        position: relative;
-        padding-left: 35px;
-        margin-left: 15px;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        line-height: 170.3%;
-
-        input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-        
-        .checkmark {
-            color: #31425a;
-            position: absolute;
-            top: calc(50% - 25px/2);
-            left: 0;
-            height: 25px;
-            width: 25px;
-            background-color: #f6f8fa;
-            border-radius: 6px;
-            text-align: left;
-        }
-
-        /* Create the checkmark/indicator (hidden when not checked) */
-        .checkmark:after {
-            content: "";
-            position: absolute;
-            display: none;
-        }
-    }
-
-    /* On mouse-over, add a grey background color */
-    .checkbox-container:hover input ~ .checkmark {
-        border: 1px solid #d5dbe2;
-    }
-
-    /* When the checkbox is checked, add a blue background */
-    .checkbox-container input:checked ~ .checkmark {
-        background-color: #004eef;
-    }
-
-    /* Show the checkmark when checked */
-    .checkbox-container input:checked ~ .checkmark:after {
-        display: block;
-    }
-
-    /* Style the checkmark/indicator */
-    .checkbox-container .checkmark:after {
-        left: 9px;
-        top: 5px;
-        width: 5px;
-        height: 10px;
-        border: solid white;
-        border-width: 0 3px 3px 0;
-        -webkit-transform: rotate(45deg);
-        -ms-transform: rotate(45deg);
-        transform: rotate(45deg);
-    }
 }
 
-@media screen and (max-width: 638px) {
+@media screen and (max-width: 890px) {
     .simple-form {
+        width: 335px;
+        height: 951px;
         padding: 25px 20px 25px;
+        margin: 20px 20px 160px;
+
+        & > h1 {
+            margin-top: 25px;
+            font-size: 30px;
+            line-height: 39px;
+            letter-spacing: -0.02em;
+        }
     }
 
-    .text-inputs {
+    .text-inputs-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
         row-gap: 20px;
+        margin: 29px 20px 21px;
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        & > .wrapper:first-of-type {
+            & > .text-input {
+                width: 295px;
+            }
+        }
 
         .text-input,
-        .select-input {
+        .dropdown-select {
             width: 295px;
             margin: 0px;
         }
+    }
 
-        :nth-child(even) {
-            margin-right: 0px;
-        }
+    .private-wrapper {
+        width: 295px;
+        justify-self: center;
+        margin: 0px 20px 0px; 
     }
 
     .sign-up-wrapper {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
 
         :first-child {
             order: 2;
@@ -451,15 +327,12 @@ export default {
 
         :nth-child(2) {
             order: 1;
-            margin-bottom: 30px;
         }
 
         & > button {
-            margin-right: 0px;
+            width: 295px;
+            margin: 30px 20px 0px;
         }
-
-        flex-direction: column;
-        align-items: center;
     }
 }
 </style>
