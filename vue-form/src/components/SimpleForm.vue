@@ -19,11 +19,11 @@
                     v-model="language"
                     class="dropdown-select language"
                     placeholder="Language"
-                    :options="languages"
                     :searchable=false
                     :map-keydown="handlers"
+                    :options="languages"
                     append-to-body
-                    :calculatePosition="withPopper"
+                    :calculate-position="withPopper"
                 >
                     <template slot="selected-option" slot-scope="option">
                         <img :src="option.image" width="20px">{{ option.title }}
@@ -41,8 +41,10 @@
                     class="dropdown-select country"
                     placeholder="Country"
                     :searchable="false"
-                    :options="countries"
                     :map-keydown="handlers"
+                    :options="countries"
+                    append-to-body
+                    :calculate-position="withPopper"
                 />
                 <span class="error" v-if="v$.selectedCountry.$errors.length">{{v$.selectedCountry.$errors[0].$message}}</span>
             </div>
@@ -80,8 +82,9 @@ import axios from 'axios';
 import Modal from './Modal';
 import { email, required, minLength, sameAs } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
-import { createPopper } from 'vue-popperjs';
+import { createPopper } from '@popperjs/core'
 import 'vue-popperjs/dist/vue-popper.css';
+import "vue-select/dist/vue-select.css";
 
 export default {
     name: "SimpleForm",
@@ -143,28 +146,30 @@ export default {
             }
         },
         withPopper(dropdownList, component, { width }) {
-            dropdownList.style.width = width + 36;
+            dropdownList.style.width = width;
             const popper = createPopper(component.$refs.toggle, dropdownList, {
                 placement: 'bottom',
-                // modifiers: [
-                //     {
-                //         name: 'offset',
-                //         options: {
-                //             offset: [0, -1],
-                //         },
-                //     },
-                //     {
-                //         name: 'toggleClass',
-                //         enabled: true,
-                //         phase: 'write',
-                //         fn({ state }) {
-                //             component.$el.classList.toggle(
-                //                 'drop-up',
-                //                 state.placement === 'top'
-                //             )
-                //         },
-                //     },
-                // ],
+                modifiers: [
+                {
+                    name: "offset",
+                    options: {
+                        offset: [0, 0]
+                    }
+                },
+                {
+                    name: "toggleClass",
+                    enabled: true,
+                    phase: "write",
+                    fn({ state }) {
+                        if (state.placement === "top") {
+                            component.$el.classList.toggle("drop-up");
+                        }
+                        else if (state.placement === "bottom") {
+                            component.$el.classList.toggle("drop-down")
+                        }
+                    }
+                }
+                ]
             });
             return () => popper.destroy()
         },

@@ -1,3 +1,4 @@
+//TEXT INPUT
 .text-input {
     background-color: #F6F8FA;
     border-radius: 14px;
@@ -8,6 +9,11 @@
     padding-left: 18px;
     border: 1px solid #f2f5f8;
     transition: all 0.4s;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 252.8%;
 
     &:valid {
         color: #1b2c45;
@@ -28,13 +34,7 @@
 
 .text-input:focus {
     outline: 0;
-    border-width: 0 0 1px;
-    border-color: #004eef;
-
-    &::before {
-        content: "value";
-        color: red
-    }
+    border-bottom: 1px solid #004eef;
 }
 
 .text-input:disabled {
